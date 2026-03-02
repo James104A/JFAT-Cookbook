@@ -40,6 +40,9 @@ function parseSteps(steps: unknown): string[] | null {
       result.push(item);
     } else if (item?.text) {
       result.push(item.text);
+    } else if (item?.name && !item?.text) {
+      // Some sites use HowToStep with only a name property
+      result.push(item.name);
     } else if (item?.itemListElement) {
       const nested = parseSteps(item.itemListElement);
       if (nested) result.push(...nested);
@@ -103,13 +106,18 @@ function extractStructuredRecipe(
             ? String(Array.isArray(yld) ? yld[0] : yld)
             : null;
 
+          // Parse times — fall back to totalTime if prep/cook missing
+          const prepTimeMinutes = parseDuration(candidate.prepTime);
+          const cookTimeMinutes = parseDuration(candidate.cookTime);
+          const totalTime = parseDuration(candidate.totalTime);
+
           return {
             title: candidate.name || null,
             descriptionShort: candidate.description || null,
             ingredients,
             steps: parseSteps(candidate.recipeInstructions),
-            prepTimeMinutes: parseDuration(candidate.prepTime),
-            cookTimeMinutes: parseDuration(candidate.cookTime),
+            prepTimeMinutes,
+            cookTimeMinutes: cookTimeMinutes ?? (totalTime && !prepTimeMinutes ? totalTime : null),
             servings,
             imageUrl,
           };
@@ -161,7 +169,10 @@ export async function extractFromUrl(url: string): Promise<ExtractResult> {
   const response = await fetch(url, {
     headers: {
       "User-Agent":
-        "Mozilla/5.0 (compatible; GoToRecipes/1.0; +https://go-to-recipes.app)",
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+      Accept:
+        "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      "Accept-Language": "en-US,en;q=0.9",
     },
   });
 
