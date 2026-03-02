@@ -1,4 +1,3 @@
-import { Readability } from "@mozilla/readability";
 import { parseHTML } from "linkedom";
 
 export interface RecipeStructuredData {
@@ -194,14 +193,77 @@ export async function extractFromUrl(url: string): Promise<ExtractResult> {
   // Extract image (structured data image takes priority)
   const imageUrl = structured?.imageUrl || extractImageUrl(doc, url);
 
-  // Extract readable text (for AI fallback)
-  const reader = new Readability(doc);
-  const article = reader.parse();
-  const text = article?.textContent?.trim().slice(0, 8000) || "";
+  // Extract text for AI fallback — strip non-content elements, keep recipe data
+  const text = extractPageText(doc);
 
   return {
     text,
     imageUrl,
     structured,
   };
+}
+
+/** Extract meaningful page text for AI, stripping navigation/scripts/ads */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function extractPageText(doc: any): string {
+  // 1. Grab JSON-LD recipe text BEFORE removing scripts — this often has
+  //    ingredients and steps even when the visible page doesn't
+  let jsonLdText = "";
+  try {
+    const ldScripts = doc.querySelectorAll(
+      'script[type="application/ld+json"]'
+    );
+    for (const script of ldScripts) {
+      const raw = script.textContent || "";
+      if (raw.includes("Recipe") || raw.includes("recipeIngredient")) {
+        jsonLdText += raw + "\n";
+      }
+    }
+  } catch {
+    // ignore
+  }
+
+  // 2. Remove elements that add noise
+  const removeSelectors = [
+    "script",
+    "style",
+    "noscript",
+    "nav",
+    "footer",
+    "header",
+    "iframe",
+    "[role='navigation']",
+    "[role='banner']",
+    "[role='contentinfo']",
+    ".ad",
+    ".ads",
+    ".advertisement",
+    ".sidebar",
+    ".comments",
+    "#comments",
+  ];
+
+  for (const sel of removeSelectors) {
+    try {
+      const els = doc.querySelectorAll(sel);
+      for (const el of els) el.remove();
+    } catch {
+      // selector not supported, skip
+    }
+  }
+
+  const bodyText = doc.body?.textContent || "";
+
+  // 3. Collapse whitespace
+  const cleanedBody = bodyText
+    .replace(/[ \t]+/g, " ")
+    .replace(/\n\s*\n/g, "\n")
+    .trim();
+
+  // 4. Combine: body text first, then JSON-LD as supplementary data
+  //    Cap total at 12000 chars for Gemini
+  const bodyPortion = cleanedBody.slice(0, 8000);
+  const jsonLdPortion = jsonLdText ? "\n\nJSON-LD Recipe Data:\n" + jsonLdText.slice(0, 4000) : "";
+
+  return (bodyPortion + jsonLdPortion).trim();
 }
