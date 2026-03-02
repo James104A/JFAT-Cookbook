@@ -1,10 +1,11 @@
 "use client";
 
-import { Recipe } from "@/generated/prisma/client";
+import { useState } from "react";
+import { Recipe, CookLog } from "@/generated/prisma/client";
 import { getRecipeImage } from "@/lib/recipe-images";
 
 interface RecipeDetailProps {
-  recipe: Recipe;
+  recipe: Recipe & { cookLogs: CookLog[] };
   canEdit?: boolean;
 }
 
@@ -17,6 +18,51 @@ export function RecipeDetail({ recipe, canEdit = false }: RecipeDetailProps) {
     : [];
   const steps: string[] = recipe.steps ? JSON.parse(recipe.steps) : [];
   const image = getRecipeImage(recipe);
+
+  // Cook log state
+  const [showCookForm, setShowCookForm] = useState(false);
+  const [cookDate, setCookDate] = useState(
+    () => new Date().toISOString().split("T")[0]
+  );
+  const [cookNotes, setCookNotes] = useState("");
+  const [cookLogs, setCookLogs] = useState(recipe.cookLogs);
+  const [localCookCount, setLocalCookCount] = useState(recipe.cookCount);
+  const [submitting, setSubmitting] = useState(false);
+
+  async function handleLogCook() {
+    setSubmitting(true);
+    try {
+      const res = await fetch(`/api/recipes/${recipe.id}/cook`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          cookedAt: new Date(cookDate).toISOString(),
+          notes: cookNotes.trim() || undefined,
+        }),
+      });
+      if (res.ok) {
+        const newLog = await res.json();
+        setCookLogs((prev) => [newLog, ...prev]);
+        setLocalCookCount((c) => c + 1);
+        setCookNotes("");
+        setShowCookForm(false);
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function handleDeleteLog(logId: string) {
+    const res = await fetch(`/api/recipes/${recipe.id}/cook`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ logId }),
+    });
+    if (res.ok) {
+      setCookLogs((prev) => prev.filter((l) => l.id !== logId));
+      setLocalCookCount((c) => Math.max(0, c - 1));
+    }
+  }
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-8">
@@ -67,13 +113,66 @@ export function RecipeDetail({ recipe, canEdit = false }: RecipeDetailProps) {
             {"☆".repeat(5 - recipe.rating)}
           </span>
         )}
-        <button className="rounded-lg bg-accent-sage/20 px-3 py-1 text-sm text-accent-sage-light transition-colors hover:bg-accent-sage/30">
-          Cooked it! ({recipe.cookCount})
+        <button
+          onClick={() => setShowCookForm(!showCookForm)}
+          className="rounded-lg bg-accent-sage/20 px-3 py-1 text-sm text-accent-sage-light transition-colors hover:bg-accent-sage/30"
+        >
+          Cooked it! ({localCookCount})
         </button>
         <button className="text-sm text-foreground-muted transition-colors hover:text-accent-copper">
           {recipe.isFavorite ? "★ Favorited" : "☆ Favorite"}
         </button>
       </div>
+
+      {/* Inline cook form */}
+      {showCookForm && (
+        <div className="mt-4 rounded-xl border border-border bg-background-elevated p-4">
+          <h3 className="mb-3 text-sm font-medium text-foreground">
+            Log a Cook
+          </h3>
+          <div className="flex flex-col gap-3">
+            <div>
+              <label className="text-xs text-foreground-muted">Date</label>
+              <input
+                type="date"
+                value={cookDate}
+                onChange={(e) => setCookDate(e.target.value)}
+                className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-foreground-muted">
+                Notes (optional)
+              </label>
+              <textarea
+                value={cookNotes}
+                onChange={(e) => setCookNotes(e.target.value)}
+                placeholder="How did it turn out? Any tweaks?"
+                rows={2}
+                className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-foreground-muted/50"
+              />
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={handleLogCook}
+                disabled={submitting}
+                className="rounded-lg bg-accent-sage px-4 py-2 text-sm font-medium text-background transition-colors hover:bg-accent-sage-light disabled:opacity-50"
+              >
+                {submitting ? "Logging..." : "Log It"}
+              </button>
+              <button
+                onClick={() => {
+                  setShowCookForm(false);
+                  setCookNotes("");
+                }}
+                className="text-sm text-foreground-muted hover:text-foreground"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Linked recipe: external link */}
       {recipe.recipeType === "linked" && recipe.url && (
@@ -129,6 +228,47 @@ export function RecipeDetail({ recipe, canEdit = false }: RecipeDetailProps) {
               <li key={i}>{step}</li>
             ))}
           </ol>
+        </div>
+      )}
+
+      {/* Cook History */}
+      {cookLogs.length > 0 && (
+        <div className="mt-8">
+          <h2 className="font-[family-name:var(--font-display)] text-xl font-semibold text-foreground">
+            Cook History
+          </h2>
+          <div className="mt-3 space-y-3">
+            {cookLogs.map((log) => (
+              <div
+                key={log.id}
+                className="flex items-start justify-between rounded-lg border border-border bg-background-elevated p-3"
+              >
+                <div>
+                  <span className="text-sm font-medium text-accent-amber-light">
+                    {new Date(log.cookedAt).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                  </span>
+                  {log.notes && (
+                    <p className="mt-1 text-sm text-foreground-muted">
+                      {log.notes}
+                    </p>
+                  )}
+                </div>
+                {canEdit && (
+                  <button
+                    onClick={() => handleDeleteLog(log.id)}
+                    className="ml-3 text-sm text-foreground-muted hover:text-accent-wine-light"
+                    title="Remove this entry"
+                  >
+                    &times;
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

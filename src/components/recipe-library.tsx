@@ -64,6 +64,16 @@ export function RecipeLibrary({ initialRecipes }: RecipeLibraryProps) {
       });
     }
 
+    // Cook status filter
+    const cookStatus = filters.cookStatus;
+    if (cookStatus && cookStatus.length === 1) {
+      if (cookStatus[0] === "Cooked") {
+        results = results.filter((r) => r.cookCount > 0);
+      } else {
+        results = results.filter((r) => r.cookCount === 0);
+      }
+    }
+
     // Category filters: AND across, OR within
     for (const [filterKey, recipeField] of FILTER_TO_FIELD) {
       const selected = filters[filterKey] as string[] | undefined;

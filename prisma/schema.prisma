@@ -45,6 +45,7 @@ model Recipe {
   updatedAt DateTime @updatedAt
 
   aiSummaryJobs AISummaryJob[]
+  cookLogs      CookLog[]
 }
 
 model AISummaryJob {
@@ -58,6 +59,17 @@ model AISummaryJob {
   modelUsed    String?
   rawExtract   String?
   errorMessage String?
+
+  createdAt DateTime @default(now())
+}
+
+model CookLog {
+  id        String   @id @default(cuid())
+  recipeId  String
+  recipe    Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+
+  cookedAt  DateTime @default(now())
+  notes     String?
 
   createdAt DateTime @default(now())
 }

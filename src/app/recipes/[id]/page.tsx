@@ -13,7 +13,10 @@ export default async function RecipePage({ params }: RecipePageProps) {
   const { id } = await params;
 
   const [recipe, authed] = await Promise.all([
-    prisma.recipe.findUnique({ where: { id } }),
+    prisma.recipe.findUnique({
+      where: { id },
+      include: { cookLogs: { orderBy: { cookedAt: "desc" } } },
+    }),
     isAuthenticated(),
   ]);
 
