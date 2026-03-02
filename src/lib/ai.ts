@@ -1,6 +1,4 @@
-import Anthropic from "@anthropic-ai/sdk";
-
-const anthropic = new Anthropic();
+import { GoogleGenAI } from "@google/genai";
 
 export interface AISummaryResult {
   title: string;
@@ -16,13 +14,16 @@ export interface AISummaryResult {
 export async function summarizeRecipeUrl(
   extractedText: string
 ): Promise<AISummaryResult> {
-  const message = await anthropic.messages.create({
-    model: "claude-sonnet-4-20250514",
-    max_tokens: 2048,
-    messages: [
-      {
-        role: "user",
-        content: `You are a recipe data extractor. Given the following text extracted from a recipe webpage, produce a JSON object with these fields:
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    throw new Error("GEMINI_API_KEY environment variable is not set");
+  }
+
+  const ai = new GoogleGenAI({ apiKey });
+
+  const response = await ai.models.generateContent({
+    model: "gemini-2.5-flash",
+    contents: `You are a recipe data extractor. Given the following text extracted from a recipe webpage, produce a JSON object with these fields:
 
 - "title": The recipe title/name.
 - "descriptionShort": A 1-2 sentence summary of the recipe.
@@ -37,11 +38,11 @@ Respond ONLY with valid JSON, no other text.
 
 Recipe text:
 ${extractedText}`,
-      },
-    ],
+    config: {
+      responseMimeType: "application/json",
+    },
   });
 
-  const text =
-    message.content[0].type === "text" ? message.content[0].text : "";
+  const text = response.text || "";
   return JSON.parse(text) as AISummaryResult;
 }
