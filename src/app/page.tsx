@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { RecipeLibrary } from "@/components/recipe-library";
 
+export const dynamic = "force-dynamic";
+
 export default async function HomePage() {
   const recipes = await prisma.recipe.findMany({
     orderBy: [{ isFavorite: "desc" }, { createdAt: "desc" }],
