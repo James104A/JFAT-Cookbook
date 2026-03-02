@@ -72,6 +72,8 @@ export function RecipeLibrary({ initialRecipes }: RecipeLibraryProps) {
           const raw = r[recipeField];
           const values: string[] =
             typeof raw === "string" ? JSON.parse(raw) : [];
+          // Recipes tagged "Any" season match all season filters
+          if (filterKey === "seasons" && values.includes("Any")) return true;
           return selected.some((s) => values.includes(s));
         });
       }
