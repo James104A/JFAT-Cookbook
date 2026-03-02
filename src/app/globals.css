@@ -1,26 +1,69 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Base surfaces */
+  --background: #1a1614;
+  --background-elevated: #242120;
+  --background-hover: #2e2a28;
+  --foreground: #f0ebe5;
+  --foreground-muted: #a89e94;
+
+  /* Accent colors */
+  --accent-amber: #d4a054;
+  --accent-amber-light: #e8c07a;
+  --accent-wine: #8b3a4a;
+  --accent-wine-light: #a84e60;
+  --accent-sage: #6b7c5e;
+  --accent-sage-light: #8a9d7a;
+  --accent-copper: #b87333;
+
+  /* Borders */
+  --border: #3a3432;
+  --border-light: #4a4240;
+
+  /* Glass surfaces */
+  --surface-glass: rgba(255, 245, 230, 0.04);
+  --surface-glass-hover: rgba(255, 245, 230, 0.08);
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-background-elevated: var(--background-elevated);
+  --color-background-hover: var(--background-hover);
   --color-foreground: var(--foreground);
+  --color-foreground-muted: var(--foreground-muted);
+  --color-accent-amber: var(--accent-amber);
+  --color-accent-amber-light: var(--accent-amber-light);
+  --color-accent-wine: var(--accent-wine);
+  --color-accent-wine-light: var(--accent-wine-light);
+  --color-accent-sage: var(--accent-sage);
+  --color-accent-sage-light: var(--accent-sage-light);
+  --color-accent-copper: var(--accent-copper);
+  --color-border: var(--border);
+  --color-border-light: var(--border-light);
+  --color-surface-glass: var(--surface-glass);
+  --color-surface-glass-hover: var(--surface-glass-hover);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-display);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.card-glass {
+  background: var(--background-elevated);
+  border: 1px solid var(--border);
+  transition: all 0.3s ease;
+}
+.card-glass:hover {
+  background: var(--background-hover);
+  border-color: var(--border-light);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px var(--border-light);
 }
 
 body {
   background: var(--background);
+  background-image:
+    radial-gradient(ellipse at 20% 50%, rgba(212, 160, 84, 0.03) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(139, 58, 74, 0.03) 0%, transparent 50%);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }

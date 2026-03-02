@@ -1,0 +1,62 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Recipe {
+  id        String   @id @default(cuid())
+  title     String
+  recipeType String  // "linked" | "native"
+
+  // Linked recipe fields
+  url              String?
+  descriptionShort String?
+  highlights       String?  // JSON array of strings
+  ingredients      String?  // JSON array of strings
+  steps            String?  // JSON array of strings
+
+  // Common fields
+  personalNotes      String?
+  seasonTags         String?  // JSON array
+  dishTypes          String?  // JSON array
+  cuisineTypes       String?  // JSON array
+  goodForTags        String?  // JSON array
+  dietaryTags        String?  // JSON array
+  mainIngredientTags String?  // JSON array
+
+  // Time
+  prepTimeMinutes  Int?
+  cookTimeMinutes  Int?
+  totalTimeMinutes Int?
+  servings         String?
+
+  // Go-to signals
+  rating       Int?
+  isFavorite   Boolean  @default(false)
+  cookCount    Int      @default(0)
+  lastCookedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  aiSummaryJobs AISummaryJob[]
+}
+
+model AISummaryJob {
+  id        String   @id @default(cuid())
+  recipeId  String
+  recipe    Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+
+  status       String  // "pending" | "processing" | "completed" | "failed"
+  sourceUrl    String
+  fetchedAt    DateTime?
+  modelUsed    String?
+  rawExtract   String?
+  errorMessage String?
+
+  createdAt DateTime @default(now())
+}
