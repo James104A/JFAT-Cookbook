@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { isAuthenticated } from "@/lib/auth";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -19,6 +20,10 @@ export async function GET(_request: NextRequest, context: RouteContext) {
 
 // PATCH /api/recipes/:id — Update a recipe
 export async function PATCH(request: NextRequest, context: RouteContext) {
+  if (!(await isAuthenticated())) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const { id } = await context.params;
   const body = await request.json();
 
@@ -32,6 +37,10 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
 // DELETE /api/recipes/:id — Delete a recipe
 export async function DELETE(_request: NextRequest, context: RouteContext) {
+  if (!(await isAuthenticated())) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const { id } = await context.params;
   await prisma.recipe.delete({ where: { id } });
   return NextResponse.json({ success: true });

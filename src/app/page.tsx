@@ -1,12 +1,17 @@
 import { prisma } from "@/lib/prisma";
+import { isAuthenticated } from "@/lib/auth";
 import { RecipeLibrary } from "@/components/recipe-library";
+import { LogoutButton } from "@/components/logout-button";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const recipes = await prisma.recipe.findMany({
-    orderBy: [{ isFavorite: "desc" }, { createdAt: "desc" }],
-  });
+  const [recipes, authed] = await Promise.all([
+    prisma.recipe.findMany({
+      orderBy: [{ isFavorite: "desc" }, { createdAt: "desc" }],
+    }),
+    isAuthenticated(),
+  ]);
 
   return (
     <main className="min-h-screen">
@@ -15,12 +20,26 @@ export default async function HomePage() {
           <h1 className="font-[family-name:var(--font-display)] text-3xl font-semibold tracking-tight text-foreground">
             Go-To Recipes
           </h1>
-          <a
-            href="/recipes/new"
-            className="rounded-lg bg-accent-amber px-4 py-2 text-sm font-medium text-background transition-colors hover:bg-accent-amber-light"
-          >
-            + Add Recipe
-          </a>
+          <div className="flex items-center gap-3">
+            {authed ? (
+              <>
+                <a
+                  href="/recipes/new"
+                  className="rounded-lg bg-accent-amber px-4 py-2 text-sm font-medium text-background transition-colors hover:bg-accent-amber-light"
+                >
+                  + Add Recipe
+                </a>
+                <LogoutButton />
+              </>
+            ) : (
+              <a
+                href="/login"
+                className="rounded-lg border border-border px-4 py-2 text-sm text-foreground-muted transition-colors hover:bg-background-hover hover:text-foreground"
+              >
+                Login
+              </a>
+            )}
+          </div>
         </div>
       </header>
       <div className="mx-auto max-w-7xl px-6 py-8">

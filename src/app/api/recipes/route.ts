@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { isAuthenticated } from "@/lib/auth";
 
 // GET /api/recipes — List all recipes with optional filtering
 export async function GET() {
@@ -11,6 +12,10 @@ export async function GET() {
 
 // POST /api/recipes — Create a new recipe
 export async function POST(request: NextRequest) {
+  if (!(await isAuthenticated())) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const body = await request.json();
 
   const recipe = await prisma.recipe.create({

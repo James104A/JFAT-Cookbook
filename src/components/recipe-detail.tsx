@@ -5,9 +5,10 @@ import { getRecipeImage } from "@/lib/recipe-images";
 
 interface RecipeDetailProps {
   recipe: Recipe;
+  canEdit?: boolean;
 }
 
-export function RecipeDetail({ recipe }: RecipeDetailProps) {
+export function RecipeDetail({ recipe, canEdit = false }: RecipeDetailProps) {
   const highlights: string[] = recipe.highlights
     ? JSON.parse(recipe.highlights)
     : [];
@@ -48,12 +49,14 @@ export function RecipeDetail({ recipe }: RecipeDetailProps) {
         <h1 className="font-[family-name:var(--font-display)] text-3xl font-bold text-foreground">
           {recipe.title}
         </h1>
-        <a
-          href={`/recipes/${recipe.id}/edit`}
-          className="rounded-lg border border-border px-3 py-1.5 text-sm text-foreground-muted transition-colors hover:bg-background-hover hover:text-foreground"
-        >
-          Edit
-        </a>
+        {canEdit && (
+          <a
+            href={`/recipes/${recipe.id}/edit`}
+            className="rounded-lg border border-border px-3 py-1.5 text-sm text-foreground-muted transition-colors hover:bg-background-hover hover:text-foreground"
+          >
+            Edit
+          </a>
+        )}
       </div>
 
       {/* Go-to signals */}
