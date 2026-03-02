@@ -14,6 +14,7 @@ model Recipe {
 
   // Linked recipe fields
   url              String?
+  imageUrl         String?  // extracted hero image from source URL
   descriptionShort String?
   highlights       String?  // JSON array of strings
   ingredients      String?  // JSON array of strings

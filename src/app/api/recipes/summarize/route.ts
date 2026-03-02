@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { extractTextFromUrl } from "@/lib/extract";
+import { extractFromUrl } from "@/lib/extract";
 import { summarizeRecipeUrl } from "@/lib/ai";
 import { isAuthenticated } from "@/lib/auth";
 
@@ -16,11 +16,12 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const extractedText = await extractTextFromUrl(url);
-    const summary = await summarizeRecipeUrl(extractedText);
+    const { text, imageUrl } = await extractFromUrl(url);
+    const summary = await summarizeRecipeUrl(text);
 
     return NextResponse.json({
       ...summary,
+      imageUrl,
       sourceUrl: url,
       fetchedAt: new Date().toISOString(),
     });

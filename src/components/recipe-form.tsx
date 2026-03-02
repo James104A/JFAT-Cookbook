@@ -110,6 +110,8 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
     parseJsonArray(recipe?.mainIngredientTags)
   );
 
+  const [imageUrl, setImageUrl] = useState(recipe?.imageUrl ?? "");
+  const [extracting, setExtracting] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -123,6 +125,49 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
         ? current.filter((t) => t !== tag)
         : [...current, tag]
     );
+  }
+
+  async function handleExtractFromUrl() {
+    if (!url.trim()) {
+      setError("Enter a URL first.");
+      return;
+    }
+    setError("");
+    setExtracting(true);
+
+    try {
+      const res = await fetch("/api/recipes/summarize", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: url.trim() }),
+      });
+
+      if (res.status === 401) {
+        setError("You must be logged in to extract recipes.");
+        return;
+      }
+
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.error || "Failed to extract recipe data.");
+        return;
+      }
+
+      const data = await res.json();
+
+      if (data.title) setTitle(data.title);
+      if (data.descriptionShort) setDescriptionShort(data.descriptionShort);
+      if (data.ingredients?.length) setIngredients(data.ingredients.join("\n"));
+      if (data.steps?.length) setSteps(data.steps.join("\n"));
+      if (data.prepTimeMinutes != null) setPrepTime(String(data.prepTimeMinutes));
+      if (data.cookTimeMinutes != null) setCookTime(String(data.cookTimeMinutes));
+      if (data.servings) setServings(data.servings);
+      if (data.imageUrl) setImageUrl(data.imageUrl);
+    } catch {
+      setError("Something went wrong extracting the recipe.");
+    } finally {
+      setExtracting(false);
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -143,6 +188,7 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
       title: title.trim(),
       recipeType,
       url: recipeType === "linked" ? url.trim() || null : null,
+      imageUrl: imageUrl.trim() || null,
       descriptionShort: descriptionShort.trim() || null,
       ingredients: ingredients.trim()
         ? ingredients
@@ -267,19 +313,38 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Linked: URL input */}
+        {/* Linked: URL input + Extract button */}
         {recipeType === "linked" && (
           <div>
             <label className="block text-sm font-medium text-foreground-muted">
               Recipe URL
             </label>
-            <input
-              type="url"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              placeholder="https://example.com/recipe..."
-              className={inputClass}
-            />
+            <div className="mt-1 flex gap-2">
+              <input
+                type="url"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                placeholder="https://example.com/recipe..."
+                className="flex-1 rounded-lg border border-border bg-background-elevated px-3 py-2 text-sm text-foreground placeholder:text-foreground-muted/50 focus:border-accent-amber/50 focus:outline-none focus:ring-1 focus:ring-accent-amber/30"
+              />
+              <button
+                type="button"
+                onClick={handleExtractFromUrl}
+                disabled={extracting || !url.trim()}
+                className="shrink-0 rounded-lg bg-accent-amber/20 px-4 py-2 text-sm font-medium text-accent-amber transition-colors hover:bg-accent-amber/30 disabled:opacity-50"
+              >
+                {extracting ? "Extracting..." : "Extract from URL"}
+              </button>
+            </div>
+            {imageUrl && (
+              <div className="mt-3">
+                <img
+                  src={imageUrl}
+                  alt="Extracted recipe image"
+                  className="h-32 w-auto rounded-lg object-cover"
+                />
+              </div>
+            )}
           </div>
         )}
 
@@ -311,35 +376,31 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
           />
         </div>
 
-        {/* Native: Ingredients + Steps */}
-        {recipeType === "native" && (
-          <>
-            <div>
-              <label className="block text-sm font-medium text-foreground-muted">
-                Ingredients (one per line)
-              </label>
-              <textarea
-                rows={6}
-                value={ingredients}
-                onChange={(e) => setIngredients(e.target.value)}
-                placeholder={"1 lb chicken thighs\n2 tbsp olive oil\nSalt and pepper"}
-                className={inputClass + " font-mono"}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-foreground-muted">
-                Steps (one per line)
-              </label>
-              <textarea
-                rows={6}
-                value={steps}
-                onChange={(e) => setSteps(e.target.value)}
-                placeholder={"Preheat oven to 400°F.\nSeason the chicken.\nRoast for 25 minutes."}
-                className={inputClass}
-              />
-            </div>
-          </>
-        )}
+        {/* Ingredients + Steps */}
+        <div>
+          <label className="block text-sm font-medium text-foreground-muted">
+            Ingredients (one per line)
+          </label>
+          <textarea
+            rows={6}
+            value={ingredients}
+            onChange={(e) => setIngredients(e.target.value)}
+            placeholder={"1 lb chicken thighs\n2 tbsp olive oil\nSalt and pepper"}
+            className={inputClass + " font-mono"}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-foreground-muted">
+            Steps (one per line)
+          </label>
+          <textarea
+            rows={6}
+            value={steps}
+            onChange={(e) => setSteps(e.target.value)}
+            placeholder={"Preheat oven to 400°F.\nSeason the chicken.\nRoast for 25 minutes."}
+            className={inputClass}
+          />
+        </div>
 
         {/* Personal Notes */}
         <div>

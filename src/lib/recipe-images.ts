@@ -88,9 +88,15 @@ export type RecipeImage =
 
 export function getRecipeImage(recipe: {
   title: string;
+  imageUrl?: string | null;
   cuisineTypes: string | null;
   dishTypes: string | null;
 }): RecipeImage {
+  // Prefer recipe-specific extracted image
+  if (recipe.imageUrl) {
+    return { type: "url", url: recipe.imageUrl };
+  }
+
   const cuisines: string[] = recipe.cuisineTypes
     ? JSON.parse(recipe.cuisineTypes)
     : [];

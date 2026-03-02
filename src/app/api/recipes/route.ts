@@ -23,6 +23,7 @@ export async function POST(request: NextRequest) {
       title: body.title,
       recipeType: body.recipeType,
       url: body.url ?? null,
+      imageUrl: body.imageUrl ?? null,
       descriptionShort: body.descriptionShort ?? null,
       highlights: body.highlights ? JSON.stringify(body.highlights) : null,
       ingredients: body.ingredients ? JSON.stringify(body.ingredients) : null,
