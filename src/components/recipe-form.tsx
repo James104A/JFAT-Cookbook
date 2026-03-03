@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Recipe } from "@/generated/prisma/client";
 import { RecipeType } from "@/types/recipe";
@@ -114,6 +114,7 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
   const [extracting, setExtracting] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const lastExtractedUrl = useRef(recipe?.url ?? "");
 
   function toggleTag(
     current: string[],
@@ -127,11 +128,7 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
     );
   }
 
-  async function handleExtractFromUrl() {
-    if (!url.trim()) {
-      setError("Enter a URL first.");
-      return;
-    }
+  async function handleExtractFromUrl(targetUrl: string) {
     setError("");
     setExtracting(true);
 
@@ -139,7 +136,7 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
       const res = await fetch("/api/recipes/summarize", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: url.trim() }),
+        body: JSON.stringify({ url: targetUrl }),
       });
 
       if (res.status === 401) {
@@ -154,6 +151,7 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
       }
 
       const data = await res.json();
+      lastExtractedUrl.current = targetUrl;
 
       if (data.title) setTitle(data.title);
       if (data.descriptionShort) setDescriptionShort(data.descriptionShort);
@@ -169,6 +167,22 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
       setExtracting(false);
     }
   }
+
+  // Auto-extract when a valid URL is entered (debounced 800ms)
+  useEffect(() => {
+    if (recipeType !== "linked") return;
+    const trimmed = url.trim();
+    if (!trimmed || trimmed === lastExtractedUrl.current) return;
+    try {
+      new URL(trimmed);
+    } catch {
+      return;
+    }
+    const timer = setTimeout(() => {
+      handleExtractFromUrl(trimmed);
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [url, recipeType]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -313,29 +327,24 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Linked: URL input + Extract button */}
+        {/* Linked: URL input (auto-extracts) */}
         {recipeType === "linked" && (
           <div>
             <label className="block text-sm font-medium text-foreground-muted">
               Recipe URL
             </label>
-            <div className="mt-1 flex gap-2">
-              <input
-                type="url"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                placeholder="https://example.com/recipe..."
-                className="flex-1 rounded-lg border border-border bg-background-elevated px-3 py-2 text-sm text-foreground placeholder:text-foreground-muted/50 focus:border-accent-amber/50 focus:outline-none focus:ring-1 focus:ring-accent-amber/30"
-              />
-              <button
-                type="button"
-                onClick={handleExtractFromUrl}
-                disabled={extracting || !url.trim()}
-                className="shrink-0 rounded-lg bg-accent-amber/20 px-4 py-2 text-sm font-medium text-accent-amber transition-colors hover:bg-accent-amber/30 disabled:opacity-50"
-              >
-                {extracting ? "Extracting..." : "Extract from URL"}
-              </button>
-            </div>
+            <input
+              type="url"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              placeholder="https://example.com/recipe..."
+              className="mt-1 w-full rounded-lg border border-border bg-background-elevated px-3 py-2 text-sm text-foreground placeholder:text-foreground-muted/50 focus:border-accent-amber/50 focus:outline-none focus:ring-1 focus:ring-accent-amber/30"
+            />
+            {extracting && (
+              <p className="mt-2 text-sm text-accent-amber">
+                Extracting recipe data...
+              </p>
+            )}
           </div>
         )}
 
