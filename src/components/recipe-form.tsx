@@ -128,7 +128,9 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
     );
   }
 
-  async function handleExtractFromUrl(targetUrl: string) {
+  const extractRef = useRef<(targetUrl: string) => Promise<void>>(null!);
+
+  extractRef.current = async (targetUrl: string) => {
     setError("");
     setExtracting(true);
 
@@ -166,7 +168,7 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
     } finally {
       setExtracting(false);
     }
-  }
+  };
 
   // Auto-extract when a valid URL is entered (debounced 800ms)
   useEffect(() => {
@@ -179,7 +181,7 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
       return;
     }
     const timer = setTimeout(() => {
-      handleExtractFromUrl(trimmed);
+      extractRef.current?.(trimmed);
     }, 800);
     return () => clearTimeout(timer);
   }, [url, recipeType]);
@@ -327,24 +329,29 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Linked: URL input (auto-extracts) */}
+        {/* Linked: URL input (auto-extracts, with manual fallback) */}
         {recipeType === "linked" && (
           <div>
             <label className="block text-sm font-medium text-foreground-muted">
               Recipe URL
             </label>
-            <input
-              type="url"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              placeholder="https://example.com/recipe..."
-              className="mt-1 w-full rounded-lg border border-border bg-background-elevated px-3 py-2 text-sm text-foreground placeholder:text-foreground-muted/50 focus:border-accent-amber/50 focus:outline-none focus:ring-1 focus:ring-accent-amber/30"
-            />
-            {extracting && (
-              <p className="mt-2 text-sm text-accent-amber">
-                Extracting recipe data...
-              </p>
-            )}
+            <div className="mt-1 flex gap-2">
+              <input
+                type="url"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                placeholder="https://example.com/recipe..."
+                className="flex-1 rounded-lg border border-border bg-background-elevated px-3 py-2 text-sm text-foreground placeholder:text-foreground-muted/50 focus:border-accent-amber/50 focus:outline-none focus:ring-1 focus:ring-accent-amber/30"
+              />
+              <button
+                type="button"
+                onClick={() => extractRef.current?.(url.trim())}
+                disabled={extracting || !url.trim()}
+                className="shrink-0 rounded-lg bg-accent-amber/20 px-4 py-2 text-sm font-medium text-accent-amber transition-colors hover:bg-accent-amber/30 disabled:opacity-50"
+              >
+                {extracting ? "Extracting..." : "Extract"}
+              </button>
+            </div>
           </div>
         )}
 
