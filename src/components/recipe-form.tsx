@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Recipe } from "@/generated/prisma/client";
 import { RecipeType } from "@/types/recipe";
@@ -114,7 +114,6 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
   const [extracting, setExtracting] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const lastExtractedUrl = useRef(recipe?.url ?? "");
 
   function toggleTag(
     current: string[],
@@ -128,9 +127,11 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
     );
   }
 
-  const extractRef = useRef<(targetUrl: string) => Promise<void>>(null!);
-
-  extractRef.current = async (targetUrl: string) => {
+  async function handleExtractFromUrl() {
+    if (!url.trim()) {
+      setError("Enter a URL first.");
+      return;
+    }
     setError("");
     setExtracting(true);
 
@@ -138,7 +139,7 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
       const res = await fetch("/api/recipes/summarize", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: targetUrl }),
+        body: JSON.stringify({ url: url.trim() }),
       });
 
       if (res.status === 401) {
@@ -153,7 +154,6 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
       }
 
       const data = await res.json();
-      lastExtractedUrl.current = targetUrl;
 
       if (data.title) setTitle(data.title);
       if (data.descriptionShort) setDescriptionShort(data.descriptionShort);
@@ -168,23 +168,7 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
     } finally {
       setExtracting(false);
     }
-  };
-
-  // Auto-extract when a valid URL is entered (debounced 800ms)
-  useEffect(() => {
-    if (recipeType !== "linked") return;
-    const trimmed = url.trim();
-    if (!trimmed || trimmed === lastExtractedUrl.current) return;
-    try {
-      new URL(trimmed);
-    } catch {
-      return;
-    }
-    const timer = setTimeout(() => {
-      extractRef.current?.(trimmed);
-    }, 800);
-    return () => clearTimeout(timer);
-  }, [url, recipeType]);
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -329,7 +313,7 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Linked: URL input (auto-extracts, with manual fallback) */}
+        {/* Linked: URL input + Extract button */}
         {recipeType === "linked" && (
           <div>
             <label className="block text-sm font-medium text-foreground-muted">
@@ -345,11 +329,11 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
               />
               <button
                 type="button"
-                onClick={() => extractRef.current?.(url.trim())}
+                onClick={handleExtractFromUrl}
                 disabled={extracting || !url.trim()}
                 className="shrink-0 rounded-lg bg-accent-amber/20 px-4 py-2 text-sm font-medium text-accent-amber transition-colors hover:bg-accent-amber/30 disabled:opacity-50"
               >
-                {extracting ? "Extracting..." : "Extract"}
+                {extracting ? "Extracting..." : "Extract from URL"}
               </button>
             </div>
           </div>
