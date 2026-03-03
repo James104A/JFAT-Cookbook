@@ -121,17 +121,17 @@ export function RecipeDetail({ recipe, canEdit = false }: RecipeDetailProps) {
         <button
           type="button"
           onClick={() => setShowImageEditor(!showImageEditor)}
-          className="group relative mt-4 w-full overflow-hidden rounded-xl"
+          className="group relative mt-4 h-64 w-full overflow-hidden rounded-xl"
         >
           {image.type === "url" ? (
             <img
               src={image.url}
               alt={recipe.title}
-              className="w-full rounded-xl"
+              className="h-full w-full object-cover"
             />
           ) : (
             <div
-              className="h-64 w-full"
+              className="h-full w-full"
               style={{
                 background: `linear-gradient(135deg, ${image.colors[0]}, ${image.colors[1]})`,
               }}
@@ -144,16 +144,16 @@ export function RecipeDetail({ recipe, canEdit = false }: RecipeDetailProps) {
           </div>
         </button>
       ) : (
-        <div className="mt-4 w-full overflow-hidden rounded-xl">
+        <div className="mt-4 h-64 w-full overflow-hidden rounded-xl">
           {image.type === "url" ? (
             <img
               src={image.url}
               alt={recipe.title}
-              className="w-full rounded-xl"
+              className="h-full w-full object-cover"
             />
           ) : (
             <div
-              className="h-64 w-full"
+              className="h-full w-full"
               style={{
                 background: `linear-gradient(135deg, ${image.colors[0]}, ${image.colors[1]})`,
               }}
