@@ -18,7 +18,7 @@ export default async function HomePage() {
       <header className="relative overflow-hidden border-b border-border bg-background-elevated/60 backdrop-blur-md px-6 py-6">
         {/* Decorative corner flourishes */}
         <svg
-          className="pointer-events-none absolute top-0 left-0 h-full w-32 opacity-[0.07]"
+          className="pointer-events-none absolute top-0 left-0 h-full w-32 opacity-[0.18]"
           viewBox="0 0 120 80"
           fill="none"
           preserveAspectRatio="xMinYMid meet"
@@ -40,7 +40,7 @@ export default async function HomePage() {
           <circle cx="20" cy="50" r="1.5" fill="var(--accent-copper)" />
         </svg>
         <svg
-          className="pointer-events-none absolute top-0 right-0 h-full w-32 -scale-x-100 opacity-[0.07]"
+          className="pointer-events-none absolute top-0 right-0 h-full w-32 -scale-x-100 opacity-[0.18]"
           viewBox="0 0 120 80"
           fill="none"
           preserveAspectRatio="xMinYMid meet"
@@ -64,18 +64,18 @@ export default async function HomePage() {
 
         {/* Subtle sparkle dots */}
         <div className="pointer-events-none absolute inset-0">
-          <div className="absolute top-3 left-[15%] h-1 w-1 rounded-full bg-accent-amber opacity-15" />
-          <div className="absolute top-5 left-[25%] h-0.5 w-0.5 rounded-full bg-accent-copper opacity-20" />
-          <div className="absolute bottom-3 left-[20%] h-0.5 w-0.5 rounded-full bg-accent-sage opacity-15" />
-          <div className="absolute top-4 right-[18%] h-1 w-1 rounded-full bg-accent-amber opacity-15" />
-          <div className="absolute bottom-4 right-[25%] h-0.5 w-0.5 rounded-full bg-accent-copper opacity-20" />
-          <div className="absolute top-6 right-[12%] h-0.5 w-0.5 rounded-full bg-accent-sage opacity-15" />
+          <div className="absolute top-3 left-[15%] h-1 w-1 rounded-full bg-accent-amber opacity-35" />
+          <div className="absolute top-5 left-[25%] h-0.5 w-0.5 rounded-full bg-accent-copper opacity-40" />
+          <div className="absolute bottom-3 left-[20%] h-0.5 w-0.5 rounded-full bg-accent-sage opacity-35" />
+          <div className="absolute top-4 right-[18%] h-1 w-1 rounded-full bg-accent-amber opacity-35" />
+          <div className="absolute bottom-4 right-[25%] h-0.5 w-0.5 rounded-full bg-accent-copper opacity-40" />
+          <div className="absolute top-6 right-[12%] h-0.5 w-0.5 rounded-full bg-accent-sage opacity-35" />
         </div>
 
         <div className="relative mx-auto flex max-w-7xl items-center justify-between">
           <div className="flex items-center gap-3">
             {/* Left flourish */}
-            <svg className="hidden h-6 w-8 text-accent-amber/25 sm:block" viewBox="0 0 32 24" fill="none">
+            <svg className="hidden h-6 w-8 text-accent-amber/50 sm:block" viewBox="0 0 32 24" fill="none">
               <path d="M28 12 C22 4, 14 2, 8 6 S2 14, 6 18 C10 22, 18 20, 22 16" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
               <circle cx="6" cy="18" r="1.5" fill="currentColor" opacity="0.6" />
             </svg>
@@ -83,7 +83,7 @@ export default async function HomePage() {
               JFAT Cookbook
             </h1>
             {/* Right flourish */}
-            <svg className="hidden h-6 w-8 -scale-x-100 text-accent-amber/25 sm:block" viewBox="0 0 32 24" fill="none">
+            <svg className="hidden h-6 w-8 -scale-x-100 text-accent-amber/50 sm:block" viewBox="0 0 32 24" fill="none">
               <path d="M28 12 C22 4, 14 2, 8 6 S2 14, 6 18 C10 22, 18 20, 22 16" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
               <circle cx="6" cy="18" r="1.5" fill="currentColor" opacity="0.6" />
             </svg>
