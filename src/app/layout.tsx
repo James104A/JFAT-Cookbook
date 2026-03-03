@@ -20,7 +20,7 @@ const playfairDisplay = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Go-To Recipes",
+  title: "JFAT Cookbook",
   description:
     "A personal recipe library with smart search, filtering, and AI-powered link summaries",
 };
