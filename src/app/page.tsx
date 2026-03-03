@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { isAuthenticated } from "@/lib/auth";
 import { RecipeLibrary } from "@/components/recipe-library";
 import { LogoutButton } from "@/components/logout-button";
+import { MarginDecorations } from "@/components/margin-decorations";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +15,8 @@ export default async function HomePage() {
   ]);
 
   return (
-    <main className="min-h-screen">
+    <main className="relative min-h-screen">
+      <MarginDecorations />
       <header className="relative overflow-hidden border-b border-border bg-background-elevated/60 backdrop-blur-md px-6 py-6">
         {/* Decorative corner flourishes */}
         <svg

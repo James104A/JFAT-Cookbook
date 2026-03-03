@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { isAuthenticated } from "@/lib/auth";
 import { RecipeDetail } from "@/components/recipe-detail";
+import { MarginDecorations } from "@/components/margin-decorations";
 
 export const dynamic = "force-dynamic";
 
@@ -25,7 +26,8 @@ export default async function RecipePage({ params }: RecipePageProps) {
   }
 
   return (
-    <main className="min-h-screen">
+    <main className="relative min-h-screen">
+      <MarginDecorations />
       <RecipeDetail recipe={recipe} canEdit={authed} />
     </main>
   );
