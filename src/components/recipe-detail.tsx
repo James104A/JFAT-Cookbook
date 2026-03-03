@@ -127,7 +127,7 @@ export function RecipeDetail({ recipe, canEdit = false }: RecipeDetailProps) {
             <img
               src={image.url}
               alt={recipe.title}
-              className="h-full w-full object-contain"
+              className="h-full w-full object-cover"
             />
           ) : (
             <div
@@ -156,7 +156,7 @@ export function RecipeDetail({ recipe, canEdit = false }: RecipeDetailProps) {
             <img
               src={image.url}
               alt={recipe.title}
-              className="h-full w-full object-contain"
+              className="h-full w-full object-cover"
             />
           ) : (
             <div
