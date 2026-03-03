@@ -121,7 +121,7 @@ export function RecipeDetail({ recipe, canEdit = false }: RecipeDetailProps) {
         <button
           type="button"
           onClick={() => setShowImageEditor(!showImageEditor)}
-          className="group relative mt-4 h-64 w-full overflow-hidden rounded-xl"
+          className="group relative mt-4 h-80 w-full overflow-hidden rounded-xl"
         >
           {image.type === "url" ? (
             <img
@@ -137,6 +137,13 @@ export function RecipeDetail({ recipe, canEdit = false }: RecipeDetailProps) {
               }}
             />
           )}
+          <div
+            className="pointer-events-none absolute bottom-0 left-0 right-0 h-28"
+            style={{
+              background:
+                "linear-gradient(to bottom, transparent, var(--background))",
+            }}
+          />
           <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/40">
             <span className="rounded-lg bg-black/60 px-3 py-1.5 text-sm font-medium text-white opacity-0 transition-opacity group-hover:opacity-100">
               Change Image
@@ -144,7 +151,7 @@ export function RecipeDetail({ recipe, canEdit = false }: RecipeDetailProps) {
           </div>
         </button>
       ) : (
-        <div className="mt-4 h-64 w-full overflow-hidden rounded-xl">
+        <div className="relative mt-4 h-80 w-full overflow-hidden rounded-xl">
           {image.type === "url" ? (
             <img
               src={image.url}
@@ -159,6 +166,13 @@ export function RecipeDetail({ recipe, canEdit = false }: RecipeDetailProps) {
               }}
             />
           )}
+          <div
+            className="absolute bottom-0 left-0 right-0 h-28"
+            style={{
+              background:
+                "linear-gradient(to bottom, transparent, var(--background))",
+            }}
+          />
         </div>
       )}
 
@@ -230,7 +244,7 @@ export function RecipeDetail({ recipe, canEdit = false }: RecipeDetailProps) {
         </div>
       )}
 
-      <div className="mt-6 flex items-start justify-between">
+      <div className="relative z-10 -mt-8 flex items-start justify-between">
         <h1 className="font-[family-name:var(--font-display)] text-3xl font-bold text-foreground">
           {recipe.title}
         </h1>
