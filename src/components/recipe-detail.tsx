@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Recipe, CookLog } from "@/generated/prisma/client";
 import { getRecipeImage } from "@/lib/recipe-images";
 
@@ -10,6 +11,7 @@ interface RecipeDetailProps {
 }
 
 export function RecipeDetail({ recipe, canEdit = false }: RecipeDetailProps) {
+  const router = useRouter();
   const highlights: string[] = recipe.highlights
     ? JSON.parse(recipe.highlights)
     : [];
@@ -18,6 +20,47 @@ export function RecipeDetail({ recipe, canEdit = false }: RecipeDetailProps) {
     : [];
   const steps: string[] = recipe.steps ? JSON.parse(recipe.steps) : [];
   const image = getRecipeImage(recipe);
+
+  // Image editor state
+  const [showImageEditor, setShowImageEditor] = useState(false);
+  const [editImageUrl, setEditImageUrl] = useState(recipe.imageUrl ?? "");
+  const [imagePreviewError, setImagePreviewError] = useState(false);
+  const [savingImage, setSavingImage] = useState(false);
+
+  async function handleSaveImage() {
+    setSavingImage(true);
+    try {
+      const res = await fetch(`/api/recipes/${recipe.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageUrl: editImageUrl.trim() || null }),
+      });
+      if (res.ok) {
+        setShowImageEditor(false);
+        router.refresh();
+      }
+    } finally {
+      setSavingImage(false);
+    }
+  }
+
+  async function handleRemoveImage() {
+    setSavingImage(true);
+    try {
+      const res = await fetch(`/api/recipes/${recipe.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageUrl: null }),
+      });
+      if (res.ok) {
+        setEditImageUrl("");
+        setShowImageEditor(false);
+        router.refresh();
+      }
+    } finally {
+      setSavingImage(false);
+    }
+  }
 
   // Cook log state
   const [showCookForm, setShowCookForm] = useState(false);
@@ -74,22 +117,118 @@ export function RecipeDetail({ recipe, canEdit = false }: RecipeDetailProps) {
       </a>
 
       {/* Hero image */}
-      <div className="mt-4 h-64 w-full overflow-hidden rounded-xl">
-        {image.type === "url" ? (
-          <img
-            src={image.url}
-            alt={recipe.title}
-            className="h-full w-full object-cover"
-          />
-        ) : (
-          <div
-            className="h-full w-full"
-            style={{
-              background: `linear-gradient(135deg, ${image.colors[0]}, ${image.colors[1]})`,
-            }}
-          />
-        )}
-      </div>
+      {canEdit ? (
+        <button
+          type="button"
+          onClick={() => setShowImageEditor(!showImageEditor)}
+          className="group relative mt-4 h-64 w-full overflow-hidden rounded-xl"
+        >
+          {image.type === "url" ? (
+            <img
+              src={image.url}
+              alt={recipe.title}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <div
+              className="h-full w-full"
+              style={{
+                background: `linear-gradient(135deg, ${image.colors[0]}, ${image.colors[1]})`,
+              }}
+            />
+          )}
+          <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/40">
+            <span className="rounded-lg bg-black/60 px-3 py-1.5 text-sm font-medium text-white opacity-0 transition-opacity group-hover:opacity-100">
+              Change Image
+            </span>
+          </div>
+        </button>
+      ) : (
+        <div className="mt-4 h-64 w-full overflow-hidden rounded-xl">
+          {image.type === "url" ? (
+            <img
+              src={image.url}
+              alt={recipe.title}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <div
+              className="h-full w-full"
+              style={{
+                background: `linear-gradient(135deg, ${image.colors[0]}, ${image.colors[1]})`,
+              }}
+            />
+          )}
+        </div>
+      )}
+
+      {/* Inline image editor */}
+      {showImageEditor && canEdit && (
+        <div className="mt-4 rounded-xl border border-border bg-background-elevated p-4">
+          <h3 className="mb-3 text-sm font-medium text-foreground">
+            Edit Image
+          </h3>
+          <div className="flex flex-col gap-3">
+            <div>
+              <label className="text-xs text-foreground-muted">Image URL</label>
+              <input
+                type="url"
+                value={editImageUrl}
+                onChange={(e) => {
+                  setEditImageUrl(e.target.value);
+                  setImagePreviewError(false);
+                }}
+                placeholder="https://example.com/image.jpg"
+                className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-foreground-muted/50"
+              />
+            </div>
+            {editImageUrl.trim() && (
+              <div>
+                {imagePreviewError ? (
+                  <p className="text-sm text-accent-wine-light">
+                    Could not load image — check the URL
+                  </p>
+                ) : (
+                  <img
+                    src={editImageUrl.trim()}
+                    alt="Preview"
+                    onError={() => setImagePreviewError(true)}
+                    className="h-32 w-auto rounded-lg object-cover"
+                  />
+                )}
+              </div>
+            )}
+            <div className="flex gap-2">
+              <button
+                onClick={handleSaveImage}
+                disabled={savingImage}
+                className="rounded-lg bg-accent-sage px-4 py-2 text-sm font-medium text-background transition-colors hover:bg-accent-sage-light disabled:opacity-50"
+              >
+                {savingImage ? "Saving..." : "Save"}
+              </button>
+              {recipe.imageUrl && (
+                <button
+                  onClick={handleRemoveImage}
+                  disabled={savingImage}
+                  className="rounded-lg border border-accent-wine/30 px-4 py-2 text-sm font-medium text-accent-wine-light transition-colors hover:bg-accent-wine/10 disabled:opacity-50"
+                >
+                  Remove Image
+                </button>
+              )}
+              <button
+                onClick={() => {
+                  setShowImageEditor(false);
+                  setEditImageUrl(recipe.imageUrl ?? "");
+                  setImagePreviewError(false);
+                }}
+                className="text-sm text-foreground-muted hover:text-foreground"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="mt-6 flex items-start justify-between">
         <h1 className="font-[family-name:var(--font-display)] text-3xl font-bold text-foreground">
