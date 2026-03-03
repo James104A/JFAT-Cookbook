@@ -61,8 +61,6 @@ export const PROTEIN_OPTIONS = [
   "Eggs",
 ] as const;
 
-export const COOK_STATUS_OPTIONS = ["Cooked", "Not Cooked Yet"] as const;
-
 export const TIME_FILTER_OPTIONS = [
   { label: "Under 30 min", max: 30 },
   { label: "30–60 min", min: 30, max: 60 },

@@ -46,7 +46,6 @@ export interface RecipeFilters {
   dietary?: string[];
   proteins?: string[];
   timeRange?: { min?: number; max?: number };
-  cookStatus?: string[];
 }
 
 export type SortOption = "recent" | "mostCooked" | "highestRated" | "prepTime";

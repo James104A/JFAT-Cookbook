@@ -22,12 +22,21 @@ const FILTER_TO_FIELD: [FilterCategory, keyof Recipe][] = [
   ["proteins", "mainIngredientTags"],
 ];
 
+type Tab = "known-delicious" | "want-to-try";
+
 export function RecipeLibrary({ initialRecipes }: RecipeLibraryProps) {
+  const [activeTab, setActiveTab] = useState<Tab>("want-to-try");
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<SortOption>("recent");
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [filters, setFilters] = useState<RecipeFilters>({});
+
+  const knownDeliciousCount = useMemo(
+    () => initialRecipes.filter((r) => r.cookCount > 0).length,
+    [initialRecipes]
+  );
+  const wantToTryCount = initialRecipes.length - knownDeliciousCount;
 
   const toggleFilter = (category: FilterCategory, value: string) => {
     setFilters((prev) => {
@@ -42,7 +51,11 @@ export function RecipeLibrary({ initialRecipes }: RecipeLibraryProps) {
   const clearFilters = () => setFilters({});
 
   const filteredRecipes = useMemo(() => {
-    let results = initialRecipes;
+    // Pre-filter by active tab
+    let results =
+      activeTab === "known-delicious"
+        ? initialRecipes.filter((r) => r.cookCount > 0)
+        : initialRecipes.filter((r) => r.cookCount === 0);
 
     // Text search
     if (search.trim()) {
@@ -62,16 +75,6 @@ export function RecipeLibrary({ initialRecipes }: RecipeLibraryProps) {
           .toLowerCase();
         return searchable.includes(q);
       });
-    }
-
-    // Cook status filter
-    const cookStatus = filters.cookStatus;
-    if (cookStatus && cookStatus.length === 1) {
-      if (cookStatus[0] === "Cooked") {
-        results = results.filter((r) => r.cookCount > 0);
-      } else {
-        results = results.filter((r) => r.cookCount === 0);
-      }
     }
 
     // Category filters: AND across, OR within
@@ -109,7 +112,7 @@ export function RecipeLibrary({ initialRecipes }: RecipeLibraryProps) {
     });
 
     return results;
-  }, [initialRecipes, search, filters, sortBy]);
+  }, [initialRecipes, activeTab, search, filters, sortBy]);
 
   const activeFilterEntries = Object.entries(filters).filter(
     ([, v]) => Array.isArray(v) && v.length > 0
@@ -117,6 +120,36 @@ export function RecipeLibrary({ initialRecipes }: RecipeLibraryProps) {
 
   return (
     <div>
+      {/* Tabs */}
+      <div className="mb-6 flex gap-2">
+        <button
+          onClick={() => setActiveTab("want-to-try")}
+          className={`rounded-lg px-4 py-2.5 text-sm font-medium transition-colors ${
+            activeTab === "want-to-try"
+              ? "bg-accent-amber text-background shadow-sm"
+              : "border border-border text-foreground-muted hover:border-accent-amber/50 hover:text-foreground"
+          }`}
+        >
+          Want to Try
+          <span className="ml-2 rounded-full bg-background/20 px-2 py-0.5 text-xs">
+            {wantToTryCount}
+          </span>
+        </button>
+        <button
+          onClick={() => setActiveTab("known-delicious")}
+          className={`rounded-lg px-4 py-2.5 text-sm font-medium transition-colors ${
+            activeTab === "known-delicious"
+              ? "bg-accent-amber text-background shadow-sm"
+              : "border border-border text-foreground-muted hover:border-accent-amber/50 hover:text-foreground"
+          }`}
+        >
+          Known Delicious
+          <span className="ml-2 rounded-full bg-background/20 px-2 py-0.5 text-xs">
+            {knownDeliciousCount}
+          </span>
+        </button>
+      </div>
+
       {/* Toolbar */}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <SearchBar value={search} onChange={setSearch} />

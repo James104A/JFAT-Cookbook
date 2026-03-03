@@ -8,7 +8,6 @@ import {
   GOOD_FOR_OPTIONS,
   DIETARY_OPTIONS,
   PROTEIN_OPTIONS,
-  COOK_STATUS_OPTIONS,
 } from "@/lib/constants";
 
 interface FilterPanelProps {
@@ -22,7 +21,6 @@ const CATEGORIES: {
   key: keyof RecipeFilters;
   options: readonly string[];
 }[] = [
-  { label: "Cook Status", key: "cookStatus", options: COOK_STATUS_OPTIONS },
   { label: "Good For", key: "goodFor", options: GOOD_FOR_OPTIONS },
   { label: "Season", key: "seasons", options: SEASON_OPTIONS },
   { label: "Dish Type", key: "dishTypes", options: DISH_TYPE_OPTIONS },
