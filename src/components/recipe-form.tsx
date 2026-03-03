@@ -339,36 +339,6 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
           </div>
         )}
 
-        {/* Image URL (all recipe types) */}
-        <div>
-          <label className="block text-sm font-medium text-foreground-muted">
-            Image URL
-          </label>
-          <input
-            type="url"
-            value={imageUrl}
-            onChange={(e) => setImageUrl(e.target.value)}
-            placeholder="https://example.com/image.jpg"
-            className={inputClass}
-          />
-          {imageUrl && (
-            <div className="mt-2 flex items-start gap-2">
-              <img
-                src={imageUrl}
-                alt="Recipe image preview"
-                className="h-32 w-auto rounded-lg object-cover"
-              />
-              <button
-                type="button"
-                onClick={() => setImageUrl("")}
-                className="rounded-lg border border-border px-2 py-1 text-xs text-foreground-muted transition-colors hover:bg-background-hover hover:text-foreground"
-              >
-                Remove
-              </button>
-            </div>
-          )}
-        </div>
-
         {/* Title */}
         <div>
           <label className="block text-sm font-medium text-foreground-muted">

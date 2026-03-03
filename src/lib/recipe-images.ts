@@ -37,6 +37,10 @@ const CUISINE_IMAGES: Record<string, string[]> = {
   Greek: [
     "https://images.unsplash.com/photo-1529059997568-3d847b1154f0?w=600&h=400&fit=crop",
   ],
+  "Middle Eastern": [
+    "https://images.unsplash.com/photo-1547050605-2f268cd4a4e7?w=600&h=400&fit=crop",
+    "https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=600&h=400&fit=crop",
+  ],
 };
 
 const DISH_TYPE_IMAGES: Record<string, string[]> = {
@@ -61,6 +65,41 @@ const DISH_TYPE_IMAGES: Record<string, string[]> = {
   ],
   Snack: [
     "https://images.unsplash.com/photo-1599490659213-e2b9527bd087?w=600&h=400&fit=crop",
+  ],
+  Main: [
+    "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&h=400&fit=crop",
+    "https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=600&h=400&fit=crop",
+  ],
+  Side: [
+    "https://images.unsplash.com/photo-1534938665420-4ca68dab746f?w=600&h=400&fit=crop",
+    "https://images.unsplash.com/photo-1543339308-d595ab3be1b7?w=600&h=400&fit=crop",
+  ],
+};
+
+const PROTEIN_IMAGES: Record<string, string[]> = {
+  Chicken: [
+    "https://images.unsplash.com/photo-1598103442097-8b74394b95c6?w=600&h=400&fit=crop",
+    "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=600&h=400&fit=crop",
+  ],
+  Beef: [
+    "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=600&h=400&fit=crop",
+    "https://images.unsplash.com/photo-1588168333986-5078d3ae3976?w=600&h=400&fit=crop",
+  ],
+  Pork: [
+    "https://images.unsplash.com/photo-1432139509613-5c4255a1d197?w=600&h=400&fit=crop",
+  ],
+  Fish: [
+    "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=600&h=400&fit=crop",
+    "https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=600&h=400&fit=crop",
+  ],
+  Shrimp: [
+    "https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?w=600&h=400&fit=crop",
+  ],
+  Tofu: [
+    "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&h=400&fit=crop",
+  ],
+  Lamb: [
+    "https://images.unsplash.com/photo-1514516345957-556ca7d90a29?w=600&h=400&fit=crop",
   ],
 };
 
@@ -91,8 +130,9 @@ export function getRecipeImage(recipe: {
   imageUrl?: string | null;
   cuisineTypes: string | null;
   dishTypes: string | null;
+  mainIngredientTags?: string | null;
 }): RecipeImage {
-  // Prefer recipe-specific extracted image
+  // 1. Explicit image (set by extraction or manual edit)
   if (recipe.imageUrl) {
     return { type: "url", url: recipe.imageUrl };
   }
@@ -103,7 +143,11 @@ export function getRecipeImage(recipe: {
   const dishTypes: string[] = recipe.dishTypes
     ? JSON.parse(recipe.dishTypes)
     : [];
+  const proteins: string[] = recipe.mainIngredientTags
+    ? JSON.parse(recipe.mainIngredientTags)
+    : [];
 
+  // 2. Cuisine match
   for (const cuisine of cuisines) {
     const images = CUISINE_IMAGES[cuisine];
     if (images && images.length > 0) {
@@ -112,6 +156,7 @@ export function getRecipeImage(recipe: {
     }
   }
 
+  // 3. Dish type match
   for (const dish of dishTypes) {
     const images = DISH_TYPE_IMAGES[dish];
     if (images && images.length > 0) {
@@ -120,6 +165,16 @@ export function getRecipeImage(recipe: {
     }
   }
 
+  // 4. Protein / main ingredient match
+  for (const protein of proteins) {
+    const images = PROTEIN_IMAGES[protein];
+    if (images && images.length > 0) {
+      const index = hashString(recipe.title) % images.length;
+      return { type: "url", url: images[index] };
+    }
+  }
+
+  // 5. Gradient (last resort)
   const gradientIndex = hashString(recipe.title) % GRADIENT_PAIRS.length;
   return { type: "gradient", colors: GRADIENT_PAIRS[gradientIndex] };
 }
