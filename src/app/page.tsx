@@ -15,7 +15,7 @@ export default async function HomePage() {
 
   return (
     <main className="min-h-screen">
-      <header className="border-b border-border bg-background-elevated/80 backdrop-blur-sm px-6 py-5">
+      <header className="border-b border-border bg-background-elevated/60 backdrop-blur-md px-6 py-5">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
           <h1 className="font-[family-name:var(--font-display)] text-3xl font-semibold tracking-tight text-foreground">
             Go-To Recipes

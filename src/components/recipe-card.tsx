@@ -37,7 +37,7 @@ export function RecipeCard({ recipe, viewMode }: RecipeCardProps) {
         className={
           viewMode === "list"
             ? "relative h-auto w-40 shrink-0 overflow-hidden"
-            : "relative h-48 w-full overflow-hidden"
+            : "relative h-56 w-full overflow-hidden"
         }
       >
         {image.type === "url" ? (
@@ -55,9 +55,9 @@ export function RecipeCard({ recipe, viewMode }: RecipeCardProps) {
             }}
           />
         )}
-        <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-background-elevated to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-background-elevated via-background-elevated/60 to-transparent" />
         {recipe.isFavorite && (
-          <span className="absolute right-2 top-2 text-lg text-accent-copper drop-shadow-lg">
+          <span className="absolute right-2.5 top-2.5 text-lg text-accent-copper drop-shadow-lg">
             &#9733;
           </span>
         )}

@@ -25,7 +25,7 @@ const FILTER_TO_FIELD: [FilterCategory, keyof Recipe][] = [
 type Tab = "known-delicious" | "want-to-try";
 
 export function RecipeLibrary({ initialRecipes }: RecipeLibraryProps) {
-  const [activeTab, setActiveTab] = useState<Tab>("want-to-try");
+  const [activeTab, setActiveTab] = useState<Tab>("known-delicious");
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<SortOption>("recent");
   const [showFilters, setShowFilters] = useState(false);
@@ -121,32 +121,46 @@ export function RecipeLibrary({ initialRecipes }: RecipeLibraryProps) {
   return (
     <div>
       {/* Tabs */}
-      <div className="mb-6 flex gap-2">
-        <button
-          onClick={() => setActiveTab("want-to-try")}
-          className={`rounded-lg px-4 py-2.5 text-sm font-medium transition-colors ${
-            activeTab === "want-to-try"
-              ? "bg-accent-amber text-background shadow-sm"
-              : "border border-border text-foreground-muted hover:border-accent-amber/50 hover:text-foreground"
-          }`}
-        >
-          Want to Try
-          <span className="ml-2 rounded-full bg-background/20 px-2 py-0.5 text-xs">
-            {wantToTryCount}
-          </span>
-        </button>
+      <div className="mb-8 flex gap-8 border-b border-border">
         <button
           onClick={() => setActiveTab("known-delicious")}
-          className={`rounded-lg px-4 py-2.5 text-sm font-medium transition-colors ${
+          className={`relative pb-3 text-sm font-medium transition-colors ${
             activeTab === "known-delicious"
-              ? "bg-accent-amber text-background shadow-sm"
-              : "border border-border text-foreground-muted hover:border-accent-amber/50 hover:text-foreground"
+              ? "text-accent-amber"
+              : "text-foreground-muted hover:text-foreground"
           }`}
         >
-          Known Delicious
-          <span className="ml-2 rounded-full bg-background/20 px-2 py-0.5 text-xs">
+          <span className="font-[family-name:var(--font-display)] text-base tracking-tight">
+            Known Delicious
+          </span>
+          <span className={`ml-2 text-xs tabular-nums ${
+            activeTab === "known-delicious" ? "text-accent-amber/70" : "text-foreground-muted/50"
+          }`}>
             {knownDeliciousCount}
           </span>
+          {activeTab === "known-delicious" && (
+            <span className="absolute inset-x-0 -bottom-px h-0.5 rounded-full bg-accent-amber" />
+          )}
+        </button>
+        <button
+          onClick={() => setActiveTab("want-to-try")}
+          className={`relative pb-3 text-sm font-medium transition-colors ${
+            activeTab === "want-to-try"
+              ? "text-accent-amber"
+              : "text-foreground-muted hover:text-foreground"
+          }`}
+        >
+          <span className="font-[family-name:var(--font-display)] text-base tracking-tight">
+            Want to Try
+          </span>
+          <span className={`ml-2 text-xs tabular-nums ${
+            activeTab === "want-to-try" ? "text-accent-amber/70" : "text-foreground-muted/50"
+          }`}>
+            {wantToTryCount}
+          </span>
+          {activeTab === "want-to-try" && (
+            <span className="absolute inset-x-0 -bottom-px h-0.5 rounded-full bg-accent-amber" />
+          )}
         </button>
       </div>
 
@@ -221,7 +235,7 @@ export function RecipeLibrary({ initialRecipes }: RecipeLibraryProps) {
       <div
         className={
           viewMode === "grid"
-            ? "grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3"
+            ? "grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
             : "flex flex-col gap-4"
         }
       >
